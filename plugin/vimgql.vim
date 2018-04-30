@@ -6,13 +6,14 @@ let loaded_vim_gql = 1
 let g:gql_endpoint = "localhost:4000/graphql"
 let g:query = " --data '{ \"query\" : \" { allSilos { id organization } }\"  }' "
 
-function! GQLGraphiQL()
+function! GQLGraphiQL() "{{{ Create the GraphiQL windows
   " Open a new split and set it up.
   call s:CreateInteractiveWindow()
   call s:CreateResponseWindow()
 endfunction
+"}}}
 
-function! s:ExecuteQuery(query)
+function! s:ExecuteQuery(query) "{{{ Take the a:query argument and executes it with curl
   let bytecode = 
         \ system("curl -s -X POST -H 
         \ 'Content-Type: application/json'" .
@@ -20,8 +21,9 @@ function! s:ExecuteQuery(query)
         \ " | prettier --parser json --stdin")
   return bytecode
 endfunction
+"}}}
 
-function! s:CreateInteractiveWindow()
+function! s:CreateInteractiveWindow() "{{{ Builds the window for creating queries
   if bufwinnr("__Response__") == -1
     belowright 10sp __GQLRsp__
     setlocal filetype=graphql
@@ -33,8 +35,9 @@ function! s:CreateInteractiveWindow()
     call s:GiveFocusToInteractiveWindow()
   endif
 endfunction
+"}}}
 
-function! s:CreateResponseWindow()
+function! s:CreateResponseWindow() "{{{ Builds the window that receives responses
   if bufwinnr("__Response__") == -1
     rightbelow vsp __Response__
     normal! ggdG
@@ -48,8 +51,9 @@ function! s:CreateResponseWindow()
     call s:GiveFocusToResponseWindow()
   endif
 endfunction
+"}}}
 
-function! s:GiveFocusToResponseWindow()
+function! s:GiveFocusToResponseWindow() "{{{ Tries to direct the cursor to the __Response__ window
   let curr_buf =  bufwinnr("%")
   let resp_buf =  bufwinnr("__Response__")
   if curr_buf == resp_buf
@@ -60,8 +64,9 @@ function! s:GiveFocusToResponseWindow()
     execute resp_buf . " wincmd w"
   endif
 endfunction
+"}}}
 
-function! s:GiveFocusToInteractiveWindow()
+function! s:GiveFocusToInteractiveWindow() "{{{ Tries to direct the cursor to the __GQLRsp__ window
   let curr_buf =  bufwinnr("%")
   let resp_buf =  bufwinnr("__GQLRsp__")
   if curr_buf == resp_buf
@@ -72,15 +77,17 @@ function! s:GiveFocusToInteractiveWindow()
     execute resp_buf . " wincmd w"
   endif
 endfunction
+"}}}
 
-function! s:AppendResponseToBuffer(response) 
+function! s:AppendResponseToBuffer(response) "{{{ Write response data to the buffer
   " Insert the bytecode.
   call s:GiveFocusToResponseWindow()
   normal! ggdG
   call append(0, split(a:response, '\v\n'))
 endfunction
+"}}}
 
-function! s:AppendResponseToInteractiveWindow(response) 
+function! s:AppendResponseToInteractiveWindow(response) "{{{ Write ranged query from buffer here 
   " Insert the bytecode.
   call s:GiveFocusToInteractiveWindow()
   if len(a:response) > 0
@@ -91,8 +98,9 @@ function! s:AppendResponseToInteractiveWindow(response)
     endfor
   endif
 endfunction
+"}}}
 
-function! GQLCloseResponseWindow()
+function! GQLCloseResponseWindow() "{{{ Close the __Response__ window
   let resp_buf =  bufwinnr("__Response__")
   if resp_buf == -1
     "resp_buf close
@@ -100,8 +108,9 @@ function! GQLCloseResponseWindow()
     execute resp_buf . " close"
   endif
 endfunction
+"}}}
 
-function! GQLCloseInteractiveWindow()
+function! GQLCloseInteractiveWindow() "{{{ Close the Interactive window
   let int_buf = bufwinnr("__GQLRsp__")
   if int_buf == -1
     "resp_buf close
@@ -109,13 +118,15 @@ function! GQLCloseInteractiveWindow()
     execute int_buf . " close"
   endif
 endfunction
+"}}}
 
-function! GQLExit()
+function! GQLExit() "{{{ Close buffers and exit Interactive windows
   call g:GQLCloseInteractiveWindow()
   call g:GQLCloseResponseWindow()
 endfunction
+"}}}
 
-function! GQLExecuteUnderCursor() range
+function! GQLExecuteUnderCursor() range "{{{ Takes a range and creates a query which is auto executed
   let s:queryString = " --data '{ \"query\" : \" "
   let s:raw = getline(a:firstline,a:lastline)
   for line_number in range(a:firstline,a:lastline)
@@ -129,7 +140,7 @@ function! GQLExecuteUnderCursor() range
   call s:AppendResponseToBuffer(s:ExecuteQuery(s:queryString))
 endfunction
 
-function! GQLInteractiveWindowQueryExecute()
+function! GQLInteractiveWindowQueryExecute() "{{{ Takes contents of __GQLRsp__ buffer, builds query and autoexecutes
   let s:queryString = " --data '{ \"query\" : \" "
   let lines = getbufline(bufnr("__GQLRsp__"),1,"$") 
   for aline in lines
@@ -138,3 +149,4 @@ function! GQLInteractiveWindowQueryExecute()
   let s:queryString = s:queryString . " \" }' "
   call s:AppendResponseToBuffer(s:ExecuteQuery(s:queryString))
 endfunction
+"}}}
