@@ -150,3 +150,11 @@ endfunction
 function! vimgql#GQLExit()
   call s:GQLExit()
 endfunction
+
+function! vimgql#GQLInteractiveWindowQueryExecute()
+  call s:GQLInteractiveWindowQueryExecute()
+endfunction
+
+function! vimgql#GQLExecuteUnderCursor() range
+  <line1>,<line2>call s:GQLExecuteUnderCursor()
+endfunction
