@@ -9,3 +9,4 @@ if !exists("gql_endpoint")
 endif
 
 command! -nargs=0 GQLGraphiQL call vimgql#GQLGraphiQL()
+command! -nargs=0 GQLExit call vimgql#GQLExit()

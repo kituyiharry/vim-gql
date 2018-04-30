@@ -142,3 +142,11 @@ function! s:GQLInteractiveWindowQueryExecute() "{{{ Takes contents of __GQLRsp__
   call s:AppendResponseToBuffer(s:ExecuteQuery(s:queryString))
 endfunction
 "}}}
+
+function! vimgql#GQLGraphiQL()
+  call s:GQLGraphiQL()
+endfunction
+
+function! vimgql#GQLExit()
+  call s:GQLExit()
+endfunction
