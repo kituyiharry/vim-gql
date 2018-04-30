@@ -22,23 +22,31 @@ function! s:ExecuteQuery(query)
 endfunction
 
 function! s:CreateInteractiveWindow()
-  belowright 10sp __GQLRsp__
-  setlocal filetype=graphql
-  setlocal buftype=nofile
-  setlocal bufhidden=hide
-  setlocal noswapfile
-  set nobuflisted
+  if bufwinnr("__Response__") == -1
+    belowright 10sp __GQLRsp__
+    setlocal filetype=graphql
+    setlocal buftype=nofile
+    setlocal bufhidden=hide
+    setlocal noswapfile
+    set nobuflisted
+  else
+    call s:GiveFocusToInteractiveWindow()
+  endif
 endfunction
 
 function! s:CreateResponseWindow()
-  rightbelow vsp __Response__
-  normal! ggdG
-  setlocal filetype=json
-  setlocal buftype=nofile
-  setlocal bufhidden=hide
-  setlocal noswapfile
-  " setlocal nonumber
-  set nobuflisted
+  if bufwinnr("__Response__") == -1
+    rightbelow vsp __Response__
+    normal! ggdG
+    setlocal filetype=json
+    setlocal buftype=nofile
+    setlocal bufhidden=hide
+    setlocal noswapfile
+    " setlocal nonumber
+    set nobuflisted
+  else
+    call s:GiveFocusToResponseWindow()
+  endif
 endfunction
 
 function! s:GiveFocusToResponseWindow()
@@ -72,6 +80,18 @@ function! s:AppendResponseToBuffer(response)
   call append(0, split(a:response, '\v\n'))
 endfunction
 
+function! s:AppendResponseToInteractiveWindow(response) 
+  " Insert the bytecode.
+  call s:GiveFocusToInteractiveWindow()
+  if len(a:response) > 0
+    normal! ggdG
+    for aline in a:response
+      "call append(line('$'), split(line, '\v\n'))
+      call append(line('$'), aline)
+    endfor
+  endif
+endfunction
+
 function! GQLCloseResponseWindow()
   let resp_buf =  bufwinnr("__Response__")
   if resp_buf == -1
@@ -97,11 +117,24 @@ endfunction
 
 function! GQLExecuteUnderCursor() range
   let s:queryString = " --data '{ \"query\" : \" "
+  let s:raw = getline(a:firstline,a:lastline)
   for line_number in range(a:firstline,a:lastline)
-    let content = escape(getline(line_number),'"')
-    let s:queryString = s:queryString . content
+    let content = getline(line_number)
+    "let s:raw = s:raw . content
+    let s:queryString = s:queryString . escape(content,'"')
   endfor
   let s:queryString = s:queryString . " \" }' "
-  echom s:queryString
+  "echom s:queryString
+  call s:AppendResponseToInteractiveWindow(s:raw)
+  call s:AppendResponseToBuffer(s:ExecuteQuery(s:queryString))
+endfunction
+
+function! GQLInteractiveWindowQueryExecute()
+  let s:queryString = " --data '{ \"query\" : \" "
+  let lines = getbufline(bufnr("__GQLRsp__"),1,"$") 
+  for aline in lines
+    let s:queryString = s:queryString . escape(aline,'"')
+  endfor
+  let s:queryString = s:queryString . " \" }' "
   call s:AppendResponseToBuffer(s:ExecuteQuery(s:queryString))
 endfunction
