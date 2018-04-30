@@ -156,5 +156,6 @@ function! vimgql#GQLInteractiveWindowQueryExecute()
 endfunction
 
 function! vimgql#GQLExecuteUnderCursor() range
-  <line1>,<line2>call s:GQLExecuteUnderCursor()
+  "Collect range and pass to this other range
+  exe  a:firstline.','.a:lastline 'call s:GQLExecuteUnderCursor()'
 endfunction

@@ -10,4 +10,4 @@ endif
 
 command! -nargs=0 GQLGraphiQL call vimgql#GQLGraphiQL()
 command! -nargs=0 GQLExit call vimgql#GQLExit()
-command! -range GQLExecuteUnderCursor <line1>,<line2>call vimgql#GQLExecuteUnderCursor()
+command! -nargs=0 -range GQLExecuteUnderCursor <line1>,<line2>call vimgql#GQLExecuteUnderCursor()
