@@ -98,10 +98,10 @@ endfunction
 function! GQLExecuteUnderCursor() range
   let s:queryString = " --data '{ \"query\" : \" "
   for line_number in range(a:firstline,a:lastline)
-    let content = getline(line_number)
+    let content = escape(getline(line_number),'"')
     let s:queryString = s:queryString . content
   endfor
   let s:queryString = s:queryString . " \" }' "
-  " echom s:queryString
+  echom s:queryString
   call s:AppendResponseToBuffer(s:ExecuteQuery(s:queryString))
 endfunction
